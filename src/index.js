@@ -52,4 +52,4 @@ class PrivateKeyProvider {
   }
 }
 
-export default PrivateKeyProvider
+module.exports = PrivateKeyProvider
