@@ -51,3 +51,5 @@ class PrivateKeyProvider {
     this.engine.sendAsync.call(this.engine, payload, callback)
   }
 }
+
+export default PrivateKeyProvider
