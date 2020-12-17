@@ -1,7 +1,9 @@
 const ProviderEngine = require('@trufflesuite/web3-provider-engine')
 const FiltersSubprovider = require('@trufflesuite/web3-provider-engine/subproviders/filters')
 const NonceSubProvider = require('@trufflesuite/web3-provider-engine/subproviders/nonce-tracker')
+const WalletSubprovider = require('@trufflesuite/web3-provider-engine/subproviders/wallet')
 const HookedSubprovider = require('@trufflesuite/web3-provider-engine/subproviders/hooked-wallet')
+const Wallet = require('ethereumjs-wallet').default
 const ProviderSubprovider = require('@trufflesuite/web3-provider-engine/subproviders/provider')
 const RpcProvider = require('@trufflesuite/web3-provider-engine/subproviders/rpc')
 const WebsocketProvider = require('@trufflesuite/web3-provider-engine/subproviders/websocket')
@@ -11,10 +13,12 @@ const Transaction = require('ethereumjs-tx')
 class PrivateKeyProvider {
   privKey
   provider
+  wallet
 
   constructor(privKey, provider) {
     this.privKey = privKey
     this.provider = provider
+    this.wallet = new Wallet(new Buffer(this.privateKey, 'hex'))
     this.#setupEngine()
   }
 
@@ -23,19 +27,21 @@ class PrivateKeyProvider {
     this.engine = new ProviderEngine({pollingInterval})
     this.engine.addProvider(new NonceSubProvider())
     this.engine.addProvider(new FiltersSubprovider())
+    this.engine.addProvider(new WalletSubprovider(this.wallet, {}))
+    this.#setupProvider()
   }
 
   #setupProvider() {
-    if (typeof provider === 'string') {
-      const protocol = (Url.parse(url).protocol || 'http:').toLowerCase()
+    if (typeof this.provider === 'string') {
+      const protocol = (Url.parse(this.provider).protocol || 'http:').toLowerCase()
 
       switch (protocol) {
         case 'ws:':
         case 'wss:':
-          this.engine.addProvider(new WebsocketProvider({rpcUrl: provider}))
+          this.engine.addProvider(new WebsocketProvider({rpcUrl: this.provider}))
           break
         default:
-          this.engine.addProvider(new RpcProvider({rpcUrl: provider}))
+          this.engine.addProvider(new RpcProvider({rpcUrl: this.provider}))
       }
     }
     else {
@@ -43,11 +49,11 @@ class PrivateKeyProvider {
     }
   }
 
-  send() {
+  send(payload, callback) {
     return this.engine.send.call(this.engine, payload, callback)
   }
 
-  sendAsync() {
+  sendAsync(payload, callback) {
     this.engine.sendAsync.call(this.engine, payload, callback)
   }
 }
