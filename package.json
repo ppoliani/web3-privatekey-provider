@@ -1,0 +1,12 @@
+{
+  "name": "web3-privatekey-provider",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:ppoliani/web3-privatekey-provider.git",
+  "author": "ppoliani <ppoliani@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@trufflesuite/web3-provider-engine": "^15.0.13-1",
+    "ethereumjs-tx": "^2.1.2"
+  }
+}
