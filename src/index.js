@@ -18,15 +18,14 @@ class PrivateKeyProvider {
   constructor(privKey, provider) {
     this.privKey = privKey
     this.provider = provider
-    this.wallet = new Wallet(new Buffer(this.privateKey, 'hex'))
+    this.wallet = new Wallet(new Buffer(this.privKey.substring(2,66), 'hex'))
     this.#setupEngine()
   }
 
   #setupEngine() {
-    const pollingInterval = 4000
-    this.engine = new ProviderEngine({pollingInterval})
-    this.engine.addProvider(new NonceSubProvider())
+    this.engine = new ProviderEngine()
     this.engine.addProvider(new FiltersSubprovider())
+    this.engine.addProvider(new NonceSubProvider())
     this.engine.addProvider(new WalletSubprovider(this.wallet, {}))
     this.#setupProvider()
   }
@@ -45,8 +44,13 @@ class PrivateKeyProvider {
       }
     }
     else {
-      this.engine.addProvider(new ProviderSubprovider(provider))
+      this.engine.addProvider(new ProviderSubprovider(this.provider))
     }
+
+    // Required by the provider engine.
+    this.engine.start((error) => {
+      if (error) throw error
+    })
   }
 
   send(payload, callback) {
