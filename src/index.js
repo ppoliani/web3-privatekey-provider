@@ -14,14 +14,14 @@ class PrivateKeyProvider {
   privKey
   provider
   wallet
-  chainIdHex
+  chainId
 
-  constructor(privKey, provider, chainIdHex) {
+  constructor(privKey, provider, chainId) {
     this.privKey = privKey
     this.provider = provider
     this.wallet = new Wallet(new Buffer(this.privKey.substring(2,66), 'hex'))
     this.#setupEngine()
-    this.chainIdHex = chainIdHex
+    this.chainId = chainId
   }
 
   #setupEngine() {
@@ -61,7 +61,7 @@ class PrivateKeyProvider {
 
   sendAsync(payload, callback) {
     if(payload.method === 'eth_sendTransaction' && !payload.params[0].chainId) {
-      payload.params[0].chainId = this.chainIdHex
+      payload.params[0].chainId = `0x${Number(this.chainId).toString(16)}`
     }
 
     this.engine.sendAsync.call(this.engine, payload, callback)
